@@ -21,7 +21,20 @@ pendingToggles: {}
 
 # 启用交互（需要在 Übersicht 设置中配置快捷键）
 afterRender: (domEl) ->
-  # 绑定点击事件 - 点击整个任务项或复选框都可以
+  $(domEl).on 'click', '.tag-chk', (e) =>
+    e.stopPropagation()
+    $form = $(e.currentTarget).closest('.add-todo-form')
+    $input = $form.find('.new-todo-input')
+    $input.data('editing', true)
+    setTimeout(() =>
+      $input.focus()
+    , 0)
+  
+  $(domEl).on 'click', '.new-todo-submit', (e) =>
+    e.preventDefault()
+    e.stopPropagation()
+    @handleAddSubmit()
+  
   $(domEl).on 'click', '.todo-checkbox', (e) =>
     e.stopPropagation()
     e.preventDefault()
@@ -32,7 +45,6 @@ afterRender: (domEl) ->
     lineIndex = $item.data('line-index')
     console.log('行索引:', lineIndex, '类型:', typeof lineIndex)
     if lineIndex != undefined and lineIndex != null and lineIndex != ''
-      # 确保是数字
       lineIndex = parseInt(lineIndex)
       if !isNaN(lineIndex)
         console.log('调用 toggleTodo，行索引:', lineIndex)
@@ -50,12 +62,7 @@ afterRender: (domEl) ->
   # 绑定输入框回车
   $(domEl).on 'keypress', '.new-todo-input', (e) =>
     if e.which == 13  # Enter 键
-      content = $(e.currentTarget).val()
-      if content.trim()
-        $(e.currentTarget).data('editing', false)
-        @addTodo(content.trim())
-        $(e.currentTarget).val('')
-        $(e.currentTarget).closest('.add-todo-form').hide()
+      @handleAddSubmit()
   
   # 绑定输入框输入事件（标记为正在编辑）
   $(domEl).on 'input', '.new-todo-input', (e) =>
@@ -67,8 +74,9 @@ afterRender: (domEl) ->
     $input.data('editing', false)
     # 延迟隐藏，避免与点击事件冲突
     setTimeout(() =>
-      if $input.val().trim() == ''
-        $input.closest('.add-todo-form').hide()
+      $form = $input.closest('.add-todo-form')
+      if $input.val().trim() == '' and $form.find(':focus').length == 0
+        $form.hide()
     , 200)
 
 toggleTodo: (lineIndex) ->
@@ -156,25 +164,50 @@ addTodo: (content) ->
     )
 
 showAddTodoDialog: ->
-  # 从 afterRender 中获取 domEl，需要通过闭包保存
-  # 这里使用全局查找，因为 afterRender 中已经绑定了事件
   $content = $('.todo-widget-container .content')
-  if $content.length == 0
-    $content = $('.content')
-  
   $form = $content.find('.add-todo-form')
   if $form.length == 0
-    $form = $('<div class="add-todo-form"><input type="text" class="new-todo-input" placeholder="输入新任务..."></div>')
+    $form = $(@newTodoFormTemplate())
     $content.prepend($form)
   
   $form.show()
-  # 延迟聚焦，确保 DOM 已更新
   setTimeout(() =>
-    $input = $form.find('.new-todo-input')
-    $input.focus()
-    # 标记输入框状态，防止 update 时清除
-    $input.data('editing', true)
+    $form.find('.new-todo-input').focus().data('editing', true)
   , 100)
+
+newTodoFormTemplate: ->
+  """
+    <div class="add-todo-form">
+      <div class="new-todo-shell">
+        <div class="tag-group">
+          <label><input type="checkbox" class="tag-chk" data-tag="-today"> 今日</label>
+          <label><input type="checkbox" class="tag-chk" data-tag="-everyday"> 每日</label>
+          <label><input type="checkbox" class="tag-chk" data-tag="-imp"> 重要</label>
+          <label><input type="checkbox" class="tag-chk" data-tag="-emer"> 紧急</label>
+        </div>
+        <div class="new-todo-row">
+          <input type="text" class="new-todo-input" placeholder="输入新任务..." />
+          <button class="new-todo-submit">添加</button>
+        </div>
+      </div>
+    </div>
+  """
+
+handleAddSubmit: ->
+  $form = $('.add-todo-form:visible')
+  return unless $form.length
+  $input = $form.find('.new-todo-input')
+  content = $input.val().trim()
+  return unless content.length
+  tags = []
+  $form.find('.tag-chk:checked').each (idx, el) ->
+    tags.push($(el).data('tag'))
+  fullContent = "#{content} #{tags.join(' ')}".trim()
+  $input.data('editing', false)
+  $input.val('')
+  $form.find('.tag-chk').prop('checked', false)
+  $form.hide()
+  @addTodo(fullContent)
 
 style: """
   top: 50px
@@ -231,24 +264,65 @@ style: """
   .add-todo-form
     padding: 16px 28px
     border-bottom: 1px solid rgba(255, 255, 255, 0.08)
-    background: rgba(0, 0, 0, 0.2)
+    background: rgba(0, 0, 0, 0.1)
     
+  .new-todo-shell
+    background: rgba(0, 0, 0, 0.15)
+    border-radius: 12px
+    padding: 12px
+    display: flex
+    flex-direction: column
+    gap: 12px
+  
+  .tag-group
+    display: flex
+    flex-wrap: wrap
+    gap: 12px
+    font-size: 12px
+    color: #c0c7e3
+  .tag-group label
+    display: flex
+    align-items: center
+    gap: 6px
+    background: rgba(255, 255, 255, 0.06)
+    padding: 4px 10px
+    border-radius: 999px
+    border: 1px solid transparent
+  .tag-group input[type="checkbox"]
+    accent-color: #818cf8
+  
+  .new-todo-row
+    display: flex
+    gap: 8px
+    align-items: center
+  
   .new-todo-input
-    width: 100%
+    flex: 1
     background: rgba(255, 255, 255, 0.08)
     border: 1px solid rgba(255, 255, 255, 0.15)
-    border-radius: 8px
+    border-radius: 10px
     padding: 10px 14px
     color: #ffffff
     font-size: 13px
     font-family: inherit
     outline: none
     transition: all 0.2s
-    
   .new-todo-input:focus
     background: rgba(255, 255, 255, 0.12)
     border-color: rgba(100, 120, 255, 0.5)
     box-shadow: 0 0 0 3px rgba(100, 120, 255, 0.1)
+  
+  .new-todo-submit
+    padding: 10px 18px
+    border-radius: 10px
+    border: none
+    background: linear-gradient(135deg, #6366f1, #8b5cf6)
+    color: #fff
+    font-weight: 600
+    cursor: pointer
+    transition: transform 0.2s ease, opacity 0.2s ease
+  .new-todo-submit:hover
+    transform: translateY(-1px)
     
   .new-todo-input::placeholder
     color: rgba(255, 255, 255, 0.4)
@@ -612,7 +686,7 @@ parseMarkdown: (text) ->
   
   html = []
   html.push @renderSummaryPanel(data)
-  html.push @renderTodaySection(data.todayIncomplete)
+  html.push @renderTodaySection(@sortTasksByPriority(data.todayIncomplete))
   
   if data.incomplete.length > 0
     html.push @renderSection('待完成', @sortTasksByPriority(data.incomplete))
@@ -637,13 +711,14 @@ renderTodoItem: (task) ->
   priorityClasses.push('is-critical') if task.isImportant and task.isUrgent
   className = [baseClass].concat(priorityClasses).join(' ')
   content = @escapeHtml(task.content)
-  tagsHtml = ''
-  if task.badges?.length
-  ordered = @orderBadges(task.badges, task)
+  tagsHtml = if task.badges?.length
+    ordered = @orderBadges(task.badges, task)
     badgeHtml = ordered.map((badge) =>
       "<span class=\"todo-badge #{badge}\">#{@badgeLabel(badge)}</span>"
     ).join('')
-    tagsHtml = " <span class=\"todo-tags\">#{badgeHtml}</span>"
+    " <span class=\"todo-tags\">#{badgeHtml}</span>"
+  else
+    ''
   metaText = ''
   if task.completed and task.completedOn
     metaText = '完成于 ' + task.completedOn
@@ -884,8 +959,7 @@ update: (output, domEl) ->
   if isFormVisible and inputValue
     $form = $(domEl).find('.add-todo-form')
     if $form.length == 0
-      # 如果表单不存在，重新创建
-      $form = $('<div class="add-todo-form"><input type="text" class="new-todo-input" placeholder="输入新任务..."></div>')
+      $form = $(@newTodoFormTemplate())
       $content.prepend($form)
     $form.show()
     $newInput = $form.find('.new-todo-input')
