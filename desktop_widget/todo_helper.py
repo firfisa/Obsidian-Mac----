@@ -8,7 +8,39 @@ TODO 文件操作辅助脚本
 import re
 import sys
 import argparse
+from datetime import datetime
 from pathlib import Path
+
+TODAY_REGEX = re.compile(r'\s+-today\b', re.IGNORECASE)
+DONE_REGEX = re.compile(r'\s+-done:\d{4}-\d{2}-\d{2}', re.IGNORECASE)
+
+
+def remove_today_tag(text: str) -> tuple[str, bool]:
+    """移除 -today 标签"""
+    new_text, count = TODAY_REGEX.subn('', text)
+    return new_text.strip(), count > 0
+
+
+def append_done_tag(text: str) -> str:
+    """在内容末尾追加完成日期"""
+    cleaned = DONE_REGEX.sub('', text).strip()
+    date_str = datetime.now().strftime('%Y-%m-%d')
+    if cleaned:
+        return f"{cleaned} -done:{date_str}"
+    return f"-done:{date_str}"
+
+
+def restore_today_from_done(text: str) -> tuple[str, bool]:
+    """将 -done:YYYY-MM-DD 恢复为 -today"""
+    cleaned, count = DONE_REGEX.subn('', text)
+    if count == 0:
+        return text, False
+    cleaned = cleaned.strip()
+    if TODAY_REGEX.search(cleaned):
+        return cleaned, False
+    if cleaned:
+        return f"{cleaned} -today", True
+    return "-today", True
 
 
 def toggle_todo(file_path: Path, line_index: int):
@@ -45,7 +77,16 @@ def toggle_todo(file_path: Path, line_index: int):
     # status 可能是 ' ' 或 'x'
     current_status = status.strip()
     new_status = 'x' if current_status == ' ' or current_status == '' else ' '
-    new_line = f"{indent}{dash}[{new_status}]{space}{content}\n"
+    new_content = content
+    if new_status == 'x':
+        new_content, had_today = remove_today_tag(new_content)
+        if had_today:
+            new_content = append_done_tag(new_content)
+    else:
+        restored, restored_flag = restore_today_from_done(new_content)
+        if restored_flag:
+            new_content = restored
+    new_line = f"{indent}{dash}[{new_status}]{space}{new_content}\n"
     lines[line_index] = new_line
     
     # 调试输出
@@ -155,4 +196,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

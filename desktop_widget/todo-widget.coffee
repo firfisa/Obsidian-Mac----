@@ -251,25 +251,176 @@ style: """
   .new-todo-input::placeholder
     color: rgba(255, 255, 255, 0.4)
     
+  .summary-panel
+    padding: 18px 28px 6px
+    display: grid
+    grid-template-columns: repeat(3, minmax(0, 1fr))
+    gap: 12px
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06)
+  
+  .summary-card
+    background: rgba(255, 255, 255, 0.04)
+    border: 1px solid rgba(255, 255, 255, 0.08)
+    border-radius: 12px
+    padding: 12px
+    display: flex
+    flex-direction: column
+    gap: 4px
+    transition: border 0.2s ease, transform 0.2s ease
+  .summary-card.highlight
+    background: linear-gradient(145deg, rgba(97, 218, 251, 0.18), rgba(129, 140, 248, 0.25))
+    border-color: rgba(129, 140, 248, 0.35)
+  .summary-card:hover
+    border-color: rgba(255, 255, 255, 0.2)
+    transform: translateY(-2px)
+  
+  .summary-label
+    font-size: 11px
+    letter-spacing: 1px
+    text-transform: uppercase
+    color: #a6b0d8
+  
+  .summary-value
+    font-size: 24px
+    font-weight: 700
+    color: #ffffff
+  
+  .summary-subtitle
+    font-size: 12px
+    color: #b9c2e3
+  
+  .progress-wrapper
+    grid-column: 1 / -1
+    margin-top: 6px
+  
+  .progress-header
+    display: flex
+    justify-content: space-between
+    font-size: 12px
+    color: #b9c2e3
+    margin-bottom: 6px
+  
+  .progress-track
+    width: 100%
+    height: 8px
+    border-radius: 999px
+    background: rgba(255, 255, 255, 0.08)
+    overflow: hidden
+  
+  .progress-fill
+    height: 100%
+    border-radius: 999px
+    background: linear-gradient(135deg, #34d399, #10b981)
+    transition: width 0.3s ease
+  
+  .today-section
+    padding: 20px 24px
+    border-radius: 18px
+    border: 1px solid rgba(255, 255, 255, 0.08)
+    background: rgba(255, 255, 255, 0.03)
+    display: flex
+    flex-direction: column
+    gap: 16px
+  .today-header
+    display: flex
+    justify-content: space-between
+    align-items: center
+  .today-title
+    font-size: 16px
+    font-weight: 700
+  .today-subtitle
+    font-size: 12px
+    color: #a4acc8
+    margin-top: 4px
+  .today-count
+    width: 42px
+    height: 42px
+    border-radius: 14px
+    background: rgba(129, 140, 248, 0.15)
+    color: #c7d2fe
+    font-weight: 700
+    display: flex
+    align-items: center
+    justify-content: center
+    font-size: 18px
+  .today-body
+    display: flex
+    flex-direction: column
+    gap: 8px
+  .today-empty
+    text-align: center
+    color: #9aa4c6
+    font-size: 13px
+    padding: 24px 0
+    border: 1px dashed rgba(255, 255, 255, 0.15)
+    border-radius: 12px
+  
   .content
     flex: 1
     overflow-y: scroll
     overflow-x: hidden
-    padding: 16px 28px 20px 28px
-    max-height: calc(750px - 100px)
+    padding: 18px 28px 24px 28px
+    max-height: calc(750px - 120px)
     box-sizing: border-box
+    display: flex
+    flex-direction: column
+    gap: 18px
     
-  .section-title
-    font-size: 11px
-    font-weight: 700
-    color: #888
-    margin-top: 16px
-    margin-bottom: 8px
-    text-transform: uppercase
+  .section
+    display: flex
+    flex-direction: column
+    gap: 10px
+  
+  .section-header
+    display: flex
+    justify-content: space-between
+    align-items: center
+    font-size: 12px
     letter-spacing: 1px
-    
-  .section-title:first-child
-    margin-top: 0
+    text-transform: uppercase
+    color: #9ba4c6
+  
+  .section-count
+    padding: 2px 8px
+    border-radius: 999px
+    background: rgba(255, 255, 255, 0.08)
+    font-size: 11px
+  
+  .section-body
+    display: flex
+    flex-direction: column
+  
+  .todo-content-block
+    display: flex
+    flex-direction: column
+    gap: 4px
+  
+  .todo-meta
+    font-size: 11px
+    color: #9098b6
+    display: flex
+    justify-content: space-between
+    align-items: center
+    gap: 8px
+  .todo-meta-text
+    color: #9098b6
+  .todo-badges
+    display: flex
+    gap: 6px
+  .todo-badge
+    font-size: 10px
+    text-transform: uppercase
+    letter-spacing: 0.6px
+    padding: 2px 8px
+    border-radius: 999px
+    background: rgba(255, 255, 255, 0.12)
+    color: #e2e8ff
+  .todo-badge.today
+    background: rgba(248, 250, 146, 0.25)
+    color: #fef9c3
+  .todo-badge.duo
+    background: rgba(94, 234, 212, 0.2)
+    color: #99f6e4
     
   .todo-item
     margin: 4px 0
@@ -336,6 +487,27 @@ style: """
   .todo-complete .todo-content
     text-decoration: line-through
     
+  .empty-state
+    padding: 80px 20px
+    text-align: center
+    color: #c2c9e3
+    border: 1px dashed rgba(255, 255, 255, 0.2)
+    border-radius: 14px
+    background: rgba(255, 255, 255, 0.02)
+  
+  .empty-icon
+    font-size: 36px
+    margin-bottom: 12px
+  
+  .empty-title
+    font-size: 20px
+    font-weight: 700
+  
+  .empty-subtitle
+    font-size: 13px
+    margin-top: 6px
+    color: #9faad0
+    
   .error
     color: #ff6b6b
     padding: 20px
@@ -385,47 +557,24 @@ render: (output) ->
   return html
 
 parseMarkdown: (text) ->
-  if not text or text.trim() == ""
-    return '<div class="error">文件为空或无法读取</div>'
-  if text.includes("文件不存在")
-    return '<div class="error">' + text + '</div>'
+  return '<div class="error">文件为空或无法读取</div>' unless text and text.trim() != ""
+  return '<div class="error">' + text + '</div>' if text.indexOf("文件不存在") == 0
   
-  lines = text.split('\n')
+  data = @extractTodos(text)
+  total = data.todos.length
+  return @renderEmptyState() if total == 0
+  
   html = []
-  incompleteCount = 0
-  completeCount = 0
-  todoLineIndex = 0
+  html.push @renderSummaryPanel(data)
+  html.push @renderTodaySection(data.todayIncomplete)
   
-  # 先统计数量
-  for line in lines
-    if @isTodoLine(line)
-      if @isCompleted(line)
-        completeCount++
-      else
-        incompleteCount++
+  if data.incomplete.length > 0
+    html.push @renderSection('待完成', data.incomplete)
   
-  # 渲染未完成的任务
-  if incompleteCount > 0
-    html.push '<div class="section-title">待完成 (' + incompleteCount + ')</div>'
-    for i in [0...lines.length]
-      line = lines[i]
-      if @isTodoLine(line) and not @isCompleted(line)
-        html.push @renderTodoItem(line, false, i, todoLineIndex)
-        todoLineIndex++
+  if data.complete.length > 0
+    html.push @renderSection('已完成', data.complete)
   
-  # 渲染已完成的任务
-  if completeCount > 0
-    html.push '<div class="section-title">已完成 (' + completeCount + ')</div>'
-    for i in [0...lines.length]
-      line = lines[i]
-      if @isTodoLine(line) and @isCompleted(line)
-        html.push @renderTodoItem(line, true, i, todoLineIndex)
-        todoLineIndex++
-  
-  if html.length == 0
-    return '<div style="color: #888; padding: 20px; text-align: center;">暂无 TODO 项</div>'
-  
-  return html.join('')
+  html.join('')
 
 isTodoLine: (line) ->
   /^\s*-\s+\[[ x]\]/.test(line)
@@ -433,27 +582,170 @@ isTodoLine: (line) ->
 isCompleted: (line) ->
   /^\s*-\s+\[x\]/.test(line)
 
-renderTodoItem: (line, completed, fileLineIndex, todoIndex) ->
-  # 提取内容（去掉 - [x] 或 - [ ]）
-  content = line.replace(/^\s*-\s+\[[ x]\]\s*/, '')
-  # 转义 HTML
-  content = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  
-  # 使用更好的复选框图标
-  checkbox = if completed then '✓' else ''
-  className = if completed then 'todo-item todo-complete' else 'todo-item todo-incomplete'
-  
-  # 确保 fileLineIndex 是数字
-  lineIndex = parseInt(fileLineIndex)
-  if isNaN(lineIndex)
-    lineIndex = fileLineIndex
-  
+renderTodoItem: (task) ->
+  checkbox = if task.completed then '✓' else ''
+  className = if task.completed then 'todo-item todo-complete' else 'todo-item todo-incomplete'
+  content = @escapeHtml(task.content)
+  metaParts = []
+  if task.completed and task.completedOn
+    metaParts.push '完成于 ' + task.completedOn
+  metaParts.push '行 ' + (task.lineIndex + 1)
+  metaText = metaParts.join(' · ')
+  badgesHtml = ''
+  if task.badges?.length
+    badgeHtml = task.badges.map((badge) =>
+      "<span class=\"todo-badge #{badge}\">#{@badgeLabel(badge)}</span>"
+    ).join('')
+    badgesHtml = "<div class=\"todo-badges\">#{badgeHtml}</div>"
   """
-    <div class="#{className}" data-line-index="#{lineIndex}">
+    <div class="#{className}" data-line-index="#{task.lineIndex}">
       <span class="todo-checkbox">#{checkbox}</span>
-      <span class="todo-content">#{content}</span>
+      <div class="todo-content-block">
+        <span class="todo-content">#{content}</span>
+        <div class="todo-meta">
+          <span class="todo-meta-text">#{metaText}</span>
+          #{badgesHtml}
+        </div>
+      </div>
     </div>
   """
+
+renderSection: (title, tasks) ->
+  items = tasks.map((task) => @renderTodoItem(task)).join('')
+  """
+    <div class="section">
+      <div class="section-header">
+        <span class="section-name">#{title}</span>
+        <span class="section-count">#{tasks.length}</span>
+      </div>
+      <div class="section-body">
+        #{items}
+      </div>
+    </div>
+  """
+
+renderSummaryPanel: (data) ->
+  total = data.todos.length
+  completeCount = data.complete.length
+  incompleteCount = data.incomplete.length
+  todayCount = data.todayIncomplete.length
+  progress = if total == 0 then 0 else Math.round((completeCount / total) * 100)
+  """
+    <div class="summary-panel">
+      <div class="summary-card highlight">
+        <div class="summary-label">今日待办</div>
+        <div class="summary-value">#{todayCount}</div>
+        <div class="summary-subtitle">今天必须完成</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">未完成</div>
+        <div class="summary-value">#{incompleteCount}</div>
+        <div class="summary-subtitle">包含今日与待办</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">已完成</div>
+        <div class="summary-value">#{completeCount}</div>
+        <div class="summary-subtitle">坚持就是胜利</div>
+      </div>
+      <div class="progress-wrapper">
+        <div class="progress-header">
+          <span>整体进度</span>
+          <span>#{progress}%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: #{progress}%;"></div>
+        </div>
+      </div>
+    </div>
+  """
+
+renderTodaySection: (tasks) ->
+  body = if tasks.length > 0
+    tasks.map((task) => @renderTodoItem(task)).join('')
+  else
+    '<div class="today-empty">今日任务已全部完成 ✅</div>'
+  """
+    <div class="today-section">
+      <div class="today-header">
+        <div>
+          <div class="today-title">今日任务</div>
+          <div class="today-subtitle">#{if tasks.length > 0 then '聚焦最重要的几件事' else '没有新的今日任务'}</div>
+        </div>
+        <div class="today-count">#{tasks.length}</div>
+      </div>
+      <div class="today-body">
+        #{body}
+      </div>
+    </div>
+  """
+
+renderEmptyState: ->
+  """
+    <div class="empty-state">
+      <div class="empty-icon">✨</div>
+      <div class="empty-title">暂无任务</div>
+      <div class="empty-subtitle">点击右上角按钮，记录第一条待办</div>
+    </div>
+  """
+
+extractTodos: (text) ->
+  todos = []
+  lines = text.split('\n')
+  for line, idx in lines
+    continue unless @isTodoLine(line)
+    completed = @isCompleted(line)
+    content = line.replace(/^\s*-\s+\[[ x]\]\s*/, '').trim()
+    meta = @parseTodoContent(content)
+    todos.push({
+      lineIndex: idx
+      completed: completed
+      content: meta.content
+      completedOn: meta.completedOn
+      badges: meta.badges
+      isToday: meta.isToday
+    })
+  {
+    todos: todos
+    incomplete: todos.filter((t) -> not t.completed)
+    complete: todos.filter((t) -> t.completed)
+    todayIncomplete: todos.filter((t) -> t.isToday and not t.completed)
+  }
+
+parseTodoContent: (rawText) ->
+  info =
+    content: rawText
+    badges: []
+    isToday: false
+    completedOn: null
+  
+  content = rawText
+  content = content.replace(/\s+-today\b/ig, (match) =>
+    info.isToday = true
+    info.badges.push('today') if info.badges.indexOf('today') == -1
+    ''
+  )
+  content = content.replace(/\s+-duo\b/ig, (match) =>
+    info.badges.push('duo') if info.badges.indexOf('duo') == -1
+    ''
+  )
+  content = content.replace(/\s+-done:(\d{4}-\d{2}-\d{2})/i, (match, date) =>
+    info.completedOn = date
+    ''
+  )
+  info.content = content.trim()
+  info
+
+badgeLabel: (badge) ->
+  switch badge
+    when 'today' then '今日'
+    when 'duo' then 'DUO'
+    else badge.toUpperCase()
+
+escapeHtml: (text) ->
+  return '' unless text?
+  text.replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
 
 update: (output, domEl) ->
   output = output or ""
