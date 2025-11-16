@@ -1,6 +1,7 @@
 <div align="center">
 
 # macOS TODO Widget for Obsidian
+<img width="479" height="707" alt="image" src="https://github.com/user-attachments/assets/123ea476-885f-4a68-bed4-357cc15ee0c4" />
 
 把 Obsidian 的 `todo.md` 以玻璃拟态小组件的形式钉在桌面上，支持优先级、今日清单、每日循环、键盘添加等特性。
 
