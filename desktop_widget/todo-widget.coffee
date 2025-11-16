@@ -686,7 +686,10 @@ parseMarkdown: (text) ->
   
   html = []
   html.push @renderSummaryPanel(data)
-  html.push @renderTodaySection(@sortTasksByPriority(data.todayIncomplete))
+  todayTasks = @sortTasksByPriority(data.todayIncomplete).map((task) ->
+    Object.assign({}, task, {context: 'today'})
+  )
+  html.push @renderTodaySection(todayTasks)
   
   if data.incomplete.length > 0
     html.push @renderSection('待完成', @sortTasksByPriority(data.incomplete))
@@ -712,7 +715,8 @@ renderTodoItem: (task) ->
   className = [baseClass].concat(priorityClasses).join(' ')
   content = @escapeHtml(task.content)
   tagsHtml = if task.badges?.length
-    ordered = @orderBadges(task.badges, task)
+    badges = @filterBadgesForContext(task.badges, task)
+    ordered = @orderBadges(badges, task)
     badgeHtml = ordered.map((badge) =>
       "<span class=\"todo-badge #{badge}\">#{@badgeLabel(badge)}</span>"
     ).join('')
@@ -864,8 +868,8 @@ parseTodoContent: (rawText) ->
     info.badges.push('duo') if info.badges.indexOf('duo') == -1
     ''
   )
-  content = content.replace(/\s+-done:(\d{4}-\d{2}-\d{2})/i, (match, date) =>
-    info.completedOn = date
+  content = content.replace(/\s+-done:(\d{4}-\d{2}-\d{2})(T\d{2}:\d{2})?/i, (match, date, time) =>
+    info.completedOn = if time? then "#{date}#{time}" else date
     ''
   )
   content = content.replace(/\s+-imp\b/ig, (match) =>
@@ -891,11 +895,8 @@ badgeLabel: (badge) ->
     else badge.toUpperCase()
 
 orderBadges: (badges, task) ->
-  priority = ['critical', 'important', 'urgent', 'today', 'everyday', 'duo']
+  priority = ['critical', 'important', 'urgent', 'everyday', 'duo']
   normalized = badges.slice()
-  showCritical = task.isImportant and task.isUrgent
-  if showCritical and normalized.indexOf('critical') == -1
-    normalized.unshift('critical')
   normalized.sort (a, b) ->
     indexA = priority.indexOf(a)
     indexB = priority.indexOf(b)
@@ -903,6 +904,16 @@ orderBadges: (badges, task) ->
     indexB = 999 if indexB == -1
     indexA - indexB
   normalized
+
+filterBadgesForContext: (badges, task) ->
+  filtered = badges.slice()
+  if task.isImportant and task.isUrgent
+    filtered = filtered.filter((badge) -> badge not in ['important', 'urgent'])
+    filtered.unshift('critical') if filtered.indexOf('critical') == -1
+  hideTodayTag = task.context == 'today'
+  if task.isToday and hideTodayTag
+    filtered = filtered.filter((badge) -> badge != 'today')
+  filtered
 
 sortTasksByPriority: (tasks) ->
   return tasks unless tasks?.length

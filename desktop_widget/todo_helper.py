@@ -13,7 +13,7 @@ from pathlib import Path
 
 TODAY_REGEX = re.compile(r'\s+-today\b', re.IGNORECASE)
 EVERYDAY_REGEX = re.compile(r'\s+-everyday\b', re.IGNORECASE)
-DONE_REGEX = re.compile(r'\s+-done:(\d{4}-\d{2}-\d{2})', re.IGNORECASE)
+DONE_REGEX = re.compile(r'\s+-done:(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})', re.IGNORECASE)
 
 
 def remove_today_tag(text: str) -> tuple[str, bool]:
@@ -23,16 +23,16 @@ def remove_today_tag(text: str) -> tuple[str, bool]:
 
 
 def append_done_tag(text: str) -> str:
-    """在内容末尾追加完成日期"""
+    """在内容末尾追加完成时间"""
     cleaned = DONE_REGEX.sub('', text).strip()
-    date_str = datetime.now().strftime('%Y-%m-%d')
+    date_str = datetime.now().strftime('%Y-%m-%dT%H:%M')
     if cleaned:
         return f"{cleaned} -done:{date_str}"
     return f"-done:{date_str}"
 
 
 def restore_today_from_done(text: str) -> tuple[str, bool]:
-    """将 -done:YYYY-MM-DD 恢复为 -today"""
+    """将 -done:YYYY-MM-DDThh:mm 恢复为 -today"""
     cleaned, count = DONE_REGEX.subn('', text)
     if count == 0:
         return text, False
@@ -137,16 +137,14 @@ def toggle_todo(file_path: Path, line_index: int):
     has_everyday = bool(EVERYDAY_REGEX.search(content))
     if new_status == 'x':
         new_content, had_today = remove_today_tag(new_content)
-        if had_today or has_everyday:
-            new_content = append_done_tag(new_content)
         if has_everyday and not EVERYDAY_REGEX.search(new_content):
             new_content = f"{new_content} -everyday".strip()
+        new_content = append_done_tag(new_content)
     else:
+        new_content, _ = remove_done_tag(new_content)
         restored, restored_flag = restore_today_from_done(new_content)
         if restored_flag:
             new_content = restored
-        else:
-            new_content, _ = remove_done_tag(new_content)
     new_line = f"{indent}{dash}[{new_status}]{space}{new_content}\n"
     lines[line_index] = new_line
     
