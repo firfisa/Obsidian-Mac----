@@ -5,7 +5,9 @@ helperScript: "/Users/firfis/Code/projects/Obsidian_TODO_list管理/desktop_widg
 
 command: """
   FILE_PATH="/Users/firfis/Documents/Obsidian/记录内容/00-Inbox/TODO list.md"
+  HELPER="/Users/firfis/Code/projects/Obsidian_TODO_list管理/desktop_widget/todo_helper.py"
   if [ -f "$FILE_PATH" ]; then
+    /usr/bin/python3 "$HELPER" refresh "$FILE_PATH" >/dev/null 2>&1 || true
     cat "$FILE_PATH"
   else
     echo "文件不存在: $FILE_PATH"
@@ -721,6 +723,7 @@ extractTodos: (text) ->
       completedOn: meta.completedOn
       badges: meta.badges
       isToday: meta.isToday
+      isEveryday: meta.isEveryday
     })
   {
     todos: todos
@@ -734,12 +737,19 @@ parseTodoContent: (rawText) ->
     content: rawText
     badges: []
     isToday: false
+    isEveryday: false
     completedOn: null
   
   content = rawText
   content = content.replace(/\s+-today\b/ig, (match) =>
     info.isToday = true
     info.badges.push('today') if info.badges.indexOf('today') == -1
+    ''
+  )
+  content = content.replace(/\s+-everyday\b/ig, (match) =>
+    info.isToday = true
+    info.isEveryday = true
+    info.badges.push('everyday') if info.badges.indexOf('everyday') == -1
     ''
   )
   content = content.replace(/\s+-duo\b/ig, (match) =>
@@ -757,6 +767,7 @@ badgeLabel: (badge) ->
   switch badge
     when 'today' then '今日'
     when 'duo' then 'DUO'
+    when 'everyday' then '每日'
     else badge.toUpperCase()
 
 escapeHtml: (text) ->
