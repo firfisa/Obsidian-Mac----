@@ -418,6 +418,18 @@ style: """
   .todo-badge.duo
     background: rgba(94, 234, 212, 0.2)
     color: #99f6e4
+  .todo-badge.everyday
+    background: rgba(96, 165, 250, 0.2)
+    color: #bfdbfe
+  .todo-badge.important
+    background: rgba(249, 115, 22, 0.3)
+    color: #ffedd5
+  .todo-badge.urgent
+    background: rgba(59, 130, 246, 0.3)
+    color: #dbeafe
+  .todo-badge.critical
+    background: rgba(239, 68, 68, 0.4)
+    color: #fee2e2
     
   .todo-item
     margin: 4px 0
@@ -463,6 +475,16 @@ style: """
   .todo-incomplete .todo-checkbox
     color: #a0b0ff
     border-color: #a0b0ff
+  .todo-item.is-important:not(.todo-complete) .todo-checkbox
+    border-color: rgba(249, 115, 22, 0.9)
+    color: #ffedd5
+  .todo-item.is-urgent:not(.todo-complete) .todo-checkbox
+    border-color: rgba(59, 130, 246, 0.9)
+    color: #dbeafe
+  .todo-item.is-critical:not(.todo-complete) .todo-checkbox
+    border-color: rgba(239, 68, 68, 1)
+    background: rgba(239, 68, 68, 0.2)
+    color: #fee2e2
     
   .todo-incomplete .todo-checkbox:hover
     color: #b0c0ff
@@ -593,7 +615,7 @@ parseMarkdown: (text) ->
   html.push @renderTodaySection(data.todayIncomplete)
   
   if data.incomplete.length > 0
-    html.push @renderSection('待完成', data.incomplete)
+    html.push @renderSection('待完成', @sortTasksByPriority(data.incomplete))
   
   if data.complete.length > 0
     html.push @renderSection('已完成', data.complete)
@@ -608,11 +630,17 @@ isCompleted: (line) ->
 
 renderTodoItem: (task) ->
   checkbox = if task.completed then '✓' else ''
-  className = if task.completed then 'todo-item todo-complete' else 'todo-item todo-incomplete'
+  baseClass = if task.completed then 'todo-item todo-complete' else 'todo-item todo-incomplete'
+  priorityClasses = []
+  priorityClasses.push('is-important') if task.isImportant
+  priorityClasses.push('is-urgent') if task.isUrgent
+  priorityClasses.push('is-critical') if task.isImportant and task.isUrgent
+  className = [baseClass].concat(priorityClasses).join(' ')
   content = @escapeHtml(task.content)
   tagsHtml = ''
   if task.badges?.length
-    badgeHtml = task.badges.map((badge) =>
+  ordered = @orderBadges(task.badges, task)
+    badgeHtml = ordered.map((badge) =>
       "<span class=\"todo-badge #{badge}\">#{@badgeLabel(badge)}</span>"
     ).join('')
     tagsHtml = " <span class=\"todo-tags\">#{badgeHtml}</span>"
@@ -724,6 +752,8 @@ extractTodos: (text) ->
       badges: meta.badges
       isToday: meta.isToday
       isEveryday: meta.isEveryday
+      isImportant: meta.isImportant
+      isUrgent: meta.isUrgent
     })
   {
     todos: todos
@@ -733,14 +763,17 @@ extractTodos: (text) ->
   }
 
 parseTodoContent: (rawText) ->
+  text = rawText or ''
   info =
-    content: rawText
+    content: text
     badges: []
     isToday: false
     isEveryday: false
+    isImportant: false
+    isUrgent: false
     completedOn: null
   
-  content = rawText
+  content = text
   content = content.replace(/\s+-today\b/ig, (match) =>
     info.isToday = true
     info.badges.push('today') if info.badges.indexOf('today') == -1
@@ -760,15 +793,52 @@ parseTodoContent: (rawText) ->
     info.completedOn = date
     ''
   )
+  content = content.replace(/\s+-imp\b/ig, (match) =>
+    info.isImportant = true
+    info.badges.push('important') if info.badges.indexOf('important') == -1
+    ''
+  )
+  content = content.replace(/\s+-emer\b/ig, (match) =>
+    info.isUrgent = true
+    info.badges.push('urgent') if info.badges.indexOf('urgent') == -1
+    ''
+  )
   info.content = content.trim()
   info
 
 badgeLabel: (badge) ->
   switch badge
     when 'today' then '今日'
-    when 'duo' then 'DUO'
     when 'everyday' then '每日'
+    when 'duo' then 'DUO'
+    when 'important' then '重要'
+    when 'urgent' then '紧急'
     else badge.toUpperCase()
+
+orderBadges: (badges, task) ->
+  priority = ['critical', 'important', 'urgent', 'today', 'everyday', 'duo']
+  normalized = badges.slice()
+  showCritical = task.isImportant and task.isUrgent
+  if showCritical and normalized.indexOf('critical') == -1
+    normalized.unshift('critical')
+  normalized.sort (a, b) ->
+    indexA = priority.indexOf(a)
+    indexB = priority.indexOf(b)
+    indexA = 999 if indexA == -1
+    indexB = 999 if indexB == -1
+    indexA - indexB
+  normalized
+
+sortTasksByPriority: (tasks) ->
+  return tasks unless tasks?.length
+  tasks.slice().sort (a, b) =>
+    @priorityScore(b) - @priorityScore(a)
+
+priorityScore: (task) ->
+  return 3 if task.isImportant and task.isUrgent
+  return 2 if task.isImportant
+  return 1 if task.isUrgent
+  0
 
 escapeHtml: (text) ->
   return '' unless text?
