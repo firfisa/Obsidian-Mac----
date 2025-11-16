@@ -20,7 +20,7 @@ pendingToggles: {}
 # 启用交互（需要在 Übersicht 设置中配置快捷键）
 afterRender: (domEl) ->
   # 绑定点击事件 - 点击整个任务项或复选框都可以
-  $(domEl).on 'click', '.todo-item, .todo-checkbox', (e) =>
+  $(domEl).on 'click', '.todo-checkbox', (e) =>
     e.stopPropagation()
     e.preventDefault()
     console.log('点击事件触发')
@@ -402,11 +402,6 @@ style: """
     justify-content: space-between
     align-items: center
     gap: 8px
-  .todo-meta-text
-    color: #9098b6
-  .todo-badges
-    display: flex
-    gap: 6px
   .todo-badge
     font-size: 10px
     text-transform: uppercase
@@ -430,7 +425,7 @@ style: """
     line-height: 1.5
     display: flex
     align-items: flex-start
-    cursor: pointer
+    cursor: default
     border: 1px solid transparent
     
   .todo-item:hover
@@ -481,11 +476,38 @@ style: """
   .todo-content
     flex: 1
     word-wrap: break-word
-    font-size: 15px
-    line-height: 1.6
+    font-size: 17px
+    line-height: 1.7
+    color: #f7f7fb
+    display: inline-flex
+    flex-wrap: wrap
+    gap: 4px
+    align-items: baseline
+  .todo-tags
+    display: inline-flex
+    gap: 6px
+  .todo-badge
+    font-size: 10px
+    text-transform: uppercase
+    letter-spacing: 0.6px
+    padding: 2px 8px
+    border-radius: 999px
+    background: rgba(255, 255, 255, 0.12)
+    color: #e2e8ff
+  .todo-badge.today
+    background: rgba(248, 250, 146, 0.25)
+    color: #fef9c3
+  .todo-badge.duo
+    background: rgba(94, 234, 212, 0.2)
+    color: #99f6e4
     
   .todo-complete .todo-content
     text-decoration: line-through
+    
+  .todo-meta
+    font-size: 12px
+    color: #aab0cf
+    margin-top: 4px
     
   .empty-state
     padding: 80px 20px
@@ -586,26 +608,22 @@ renderTodoItem: (task) ->
   checkbox = if task.completed then '✓' else ''
   className = if task.completed then 'todo-item todo-complete' else 'todo-item todo-incomplete'
   content = @escapeHtml(task.content)
-  metaParts = []
-  if task.completed and task.completedOn
-    metaParts.push '完成于 ' + task.completedOn
-  metaParts.push '行 ' + (task.lineIndex + 1)
-  metaText = metaParts.join(' · ')
-  badgesHtml = ''
+  tagsHtml = ''
   if task.badges?.length
     badgeHtml = task.badges.map((badge) =>
       "<span class=\"todo-badge #{badge}\">#{@badgeLabel(badge)}</span>"
     ).join('')
-    badgesHtml = "<div class=\"todo-badges\">#{badgeHtml}</div>"
+    tagsHtml = " <span class=\"todo-tags\">#{badgeHtml}</span>"
+  metaText = ''
+  if task.completed and task.completedOn
+    metaText = '完成于 ' + task.completedOn
+  metaBlock = if metaText then "<div class=\"todo-meta\">#{metaText}</div>" else ''
   """
     <div class="#{className}" data-line-index="#{task.lineIndex}">
       <span class="todo-checkbox">#{checkbox}</span>
       <div class="todo-content-block">
-        <span class="todo-content">#{content}</span>
-        <div class="todo-meta">
-          <span class="todo-meta-text">#{metaText}</span>
-          #{badgesHtml}
-        </div>
+        <span class="todo-content">#{content}#{tagsHtml}</span>
+        #{metaBlock}
       </div>
     </div>
   """
